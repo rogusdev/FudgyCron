@@ -14,9 +14,13 @@ dotnet new xunit -f netcoreapp2.0 -n FudgyCron.Tests
 dotnet add ./FudgyCron.Tests package xunit --version 2.3.1  # update the version
 dotnet add ./FudgyCron.Tests package FakeItEasy --version 4.2.0
 dotnet add ./FudgyCron.Tests reference ./FudgyCron.Web/FudgyCron.Web.csproj
+dotnet sln add FudgyCron.Tests/FudgyCron.Tests.csproj
 
-sed -i '/PackageReference Include="Microsoft.NET.Test.Sdk"/ d' FudgyCron.Tests/FudgyCron.Tests.csproj
-sed -i 's/<PackageReference Include="xunit.runner.visualstudio" Version="2.2.0" \/>/<DotNetCliToolReference Include="dotnet-xunit" Version="2.3.1" \/>/' FudgyCron.Tests/FudgyCron.Tests.csproj
+dotnet add ./FudgyCron.Tests package Microsoft.NET.Test.Sdk --version 15.5.0
+dotnet add ./FudgyCron.Tests package xunit.runner.visualstudio --version 2.3.1 
+
+#sed -i '/PackageReference Include="Microsoft.NET.Test.Sdk"/ d' FudgyCron.Tests/FudgyCron.Tests.csproj
+#sed -i 's/<PackageReference Include="xunit.runner.visualstudio" Version="2.3.1" \/>/<DotNetCliToolReference Include="dotnet-xunit" Version="2.3.1" \/>/' FudgyCron.Tests/FudgyCron.Tests.csproj
 
 dotnet add ./FudgyCron.Web package DotNetEnv --version 1.1.0
 dotnet add ./FudgyCron.Web package Npgsql --version 3.2.5
@@ -128,12 +132,40 @@ EOF
 
 
 
-rm -rf FudgyCron.Web/bin FudgyCron.Web/obj FudgyCron.Tests/bin FudgyCron.Tests/obj
-dotnet clean
-dotnet restore
+rm -rf FudgyCron.Web/bin FudgyCron.Web/obj FudgyCron.Tests/bin FudgyCron.Tests/obj && dotnet clean #&& dotnet restore
 
-cd FudgyCron.Web && dotnet build && dotnet restore && cd ..
-cd FudgyCron.Web && dotnet publish -c Release && cd ..
+cd FudgyCron.Web && dotnet build && dotnet restore && cd ../FudgyCron.Web && dotnet publish -c Release && cd ..
 dotnet FudgyCron.Web/bin/Release/netcoreapp2.0/publish/FudgyCron.Web.dll
 
 cp FudgyCron.Web/Content/* FudgyCron.Web/bin/Release/netcoreapp2.0/publish/Content/
+
+
+docker build -t fudgy-cron .
+
+docker run --rm -it --env-file .env -p 0.0.0.0:5000:5000 fudgy-cron
+
+
+
+sudo apt-get --purge remove postgresql postgresql-common postgresql-client-common
+
+# https://medium.com/travis-on-docker/how-to-run-dockerized-apps-on-heroku-and-its-pretty-great-76e07e610e22
+# http://philippe.bourgau.net/how-to-boot-a-new-rails-project-with-docker-and-heroku/
+# https://stackoverflow.com/questions/44902808/latest-docker-update-broken-heroku-cli
+#  Error: docker login exited with 125  << resolved by using correct (new) plugin ^
+#heroku plugins:install heroku-container-registry
+
+#FROM heroku/heroku:16
+
+heroku login
+heroku container:login
+
+heroku create fudgycron
+#heroku apps:destroy fudgycron
+heroku container:push web
+
+
+heroku logs -t -a fudgycron
+
+http://fudgycron.herokuapp.com
+
+http://fudgycron.herokuapp.com/Content/index.html

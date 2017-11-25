@@ -7,7 +7,8 @@ namespace FudgyCron.Web
     {
         public BaseModule() : base("/")
         {
-            Get("/", args => "NancyFX Hello @ " + DateTime.UtcNow);
+            var response = $"NancyFX Hello @ {DateTime.UtcNow} ... DATABSE_URL from ENV: {System.Environment.GetEnvironmentVariable("DATABASE_URL")}";
+            Get("/", args => response);
         }
     }
 }

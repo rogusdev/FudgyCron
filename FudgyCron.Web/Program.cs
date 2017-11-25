@@ -7,9 +7,10 @@ namespace FudgyCron.Web
     {
         public static void Main(string[] args)
         {
+            var port = System.Environment.GetEnvironmentVariable("PORT") ?? "5000";
             var host = new WebHostBuilder()
                 .UseKestrel()
-                .UseUrls("http://*:5000")
+                .UseUrls($"http://*:{port}")
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseStartup<Startup>()
                 .Build();

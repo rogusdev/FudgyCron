@@ -1,0 +1,8 @@
+{
+  "name": "FudgyCron",
+  "description": "FudgyCron provides a GUI for managing jobs you want executed on schedules",
+  "image": "microsoft/aspnetcore:2.0.3",
+  "addons": [
+    "heroku-postgresql"
+  ]
+}

@@ -1,4 +1,3 @@
-using System;
 using Xunit;
 
 namespace FudgyCron.Tests
@@ -8,7 +7,7 @@ namespace FudgyCron.Tests
         [Fact]
         public void Test1()
         {
-
+            Assert.Equal(1, 1);
         }
     }
 }

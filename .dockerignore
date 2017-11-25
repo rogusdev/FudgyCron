@@ -1,0 +1,15 @@
+.DS_Store
+.dockerignore
+.env
+.git
+.gitignore
+.idea
+.vs
+.vscode
+docker-compose.yml
+Dockerfile
+
+*/bin/
+*/obj/
+
+setup.sh
