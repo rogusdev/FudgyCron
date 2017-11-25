@@ -13,12 +13,12 @@ COPY FudgyCron.Tests/*.csproj FudgyCron.Tests/
 RUN dotnet restore
 
 COPY . .
-RUN dotnet publish -c Release -o out
+RUN dotnet publish -c Release -o out \
+    && touch FudgyCron.Web/out/.env
 
 FROM microsoft/aspnetcore:2.0.3
 WORKDIR /app
 COPY --from=build-env /app/FudgyCron.Web/out .
-RUN touch .env
 
 # https://www.ctl.io/developers/blog/post/dockerfile-entrypoint-vs-cmd/
 # Heroku will not accept an empty array CMD! -- must pass empty string inside

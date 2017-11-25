@@ -26,7 +26,7 @@ dotnet add ./FudgyCron.Web package DotNetEnv --version 1.1.0
 dotnet add ./FudgyCron.Web package Npgsql --version 3.2.5
 dotnet add ./FudgyCron.Web package Dapper --version 1.50.2
 dotnet add ./FudgyCron.Web package StackExchange.Redis --version 1.2.6
-dotnet add ./FudgyCron.Web package Confluent.Kafka --version 0.11.2
+dotnet add ./FudgyCron.Web package Confluent.Kafka --version 0.11.3
 dotnet add ./FudgyCron.Web package Quartz --version 3.0.0-beta1
 dotnet add ./FudgyCron.Web package Newtonsoft.Json --version 10.0.3
 dotnet add ./FudgyCron.Web package CronExpressionDescriptor --version 2.0.2
@@ -36,7 +36,8 @@ dotnet add ./FudgyCron.Web package Microsoft.AspNetCore.Hosting --version 2.0.0
 dotnet add ./FudgyCron.Web package Microsoft.AspNetCore.Owin --version 2.0.0
 dotnet add ./FudgyCron.Web package Microsoft.AspNetCore.Server.Kestrel --version 2.0.0
 dotnet add ./FudgyCron.Web package Microsoft.Extensions.CommandLineUtils --version 1.1.1
-dotnet add ./FudgyCron.Web package Nancy -v 2.0.0-clienteastwood
+dotnet add ./FudgyCron.Web package Nancy --version 2.0.0-clienteastwood
+#dotnet add ./FudgyCron.Web package Nancy.Serialization.JsonNet --version 2.0.0-clinteastwood  # seems to break restore somehow
 
 
 
@@ -148,11 +149,14 @@ docker run --rm -it --env-file .env -p 0.0.0.0:5000:5000 fudgy-cron
 
 sudo apt-get --purge remove postgresql postgresql-common postgresql-client-common
 
+# need local psql client for heroku postgres
+sudo apt-get install postgresql-client
+
 # https://medium.com/travis-on-docker/how-to-run-dockerized-apps-on-heroku-and-its-pretty-great-76e07e610e22
 # http://philippe.bourgau.net/how-to-boot-a-new-rails-project-with-docker-and-heroku/
 # https://stackoverflow.com/questions/44902808/latest-docker-update-broken-heroku-cli
 #  Error: docker login exited with 125  << resolved by using correct (new) plugin ^
-#heroku plugins:install heroku-container-registry
+heroku plugins:install heroku-container-registry
 
 #FROM heroku/heroku:16
 
@@ -161,7 +165,7 @@ heroku container:login
 
 heroku create fudgycron
 #heroku apps:destroy fudgycron
-heroku container:push web
+heroku container:push web  # build and send to heroku
 
 
 heroku logs -t -a fudgycron
@@ -169,3 +173,45 @@ heroku logs -t -a fudgycron
 http://fudgycron.herokuapp.com
 
 http://fudgycron.herokuapp.com/Content/index.html
+
+
+heroku addons -a fudgycron
+
+heroku plugins:install heroku-redis
+
+# https://elements.heroku.com/addons/heroku-redis
+# https://devcenter.heroku.com/articles/heroku-redis#provisioning-the-add-on
+# must add billing info before you can provision this
+heroku addons:create heroku-redis:hobby-dev -a fudgycron
+
+# https://elements.heroku.com/addons/heroku-postgresql
+# https://devcenter.heroku.com/articles/heroku-postgresql#version-support-and-legacy-infrastructure
+heroku addons:create heroku-postgresql:hobby-dev -a fudgycron
+# --version 9.6
+# ^ specifying version gasve me 9.6.1, without specifying it gave me 9.6.4
+# -- trying to specify minor version threw an error about not available
+
+
+heroku pg:psql -a fudgycron
+
+
+CREATE TABLE things (
+ id UUID PRIMARY KEY,
+ name VARCHAR (255) NOT NULL,
+ enabled BOOLEAN NOT NULL DEFAULT 'f',
+ created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+
+heroku redis:credentials
+# redis://h:p52ed8f0d86c8578dfb90dd950775fa479ef920caed105ffbf0403ed68e63111f@ec2-34-227-234-245.compute-1.amazonaws.com:36569
+
+redis-cli -a p52ed8f0d86c8578dfb90dd950775fa479ef920caed105ffbf0403ed68e63111f -h ec2-34-227-234-245.compute-1.amazonaws.com -p 36569
+
+# KEYS *
+
+
+http://fudgycron.herokuapp.com/redis/YEP/hi
+http://fudgycron.herokuapp.com/postgres/WORDS!!!/rainbow

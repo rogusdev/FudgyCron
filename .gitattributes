@@ -1,0 +1,11 @@
+# https://stackoverflow.com/questions/170961/whats-the-best-crlf-carriage-return-line-feed-handling-strategy-with-git
+*        text eol=lf
+
+*.cs     text diff=csharp
+*.html   text diff=html
+*.css    text diff=css
+*.js     text diff=js
+*.sql    text diff=sql
+
+*.csproj text merge=union
+*.sln    text merge=union eol=crlf
